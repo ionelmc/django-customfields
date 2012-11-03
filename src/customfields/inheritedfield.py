@@ -8,8 +8,11 @@ from django.db.models.fields.related import RelatedField, add_lazy_relation, \
                         ReverseManyRelatedObjectsDescriptor, ManyToManyField
 from django.db.models.base import ModelBase
 from django.db.models import signals
-from django.db.models.sql.constants import LOOKUP_SEP, QUERY_TERMS
-
+from django.db.models.sql.constants import QUERY_TERMS
+try:
+    from django.db.models.sql.constants import LOOKUP_SEP
+except ImportError:
+    from django.db.models.constants import LOOKUP_SEP
 from django.utils.functional import curry
 
 import copy
@@ -29,7 +32,7 @@ class InheritedOnlyException(Exception):
 class InheritedField(Field):
     """
     This field will:
-    
+
         - check if the model refered by ``parent_name`` contains ``field_name``
           and raise according exceptions if `validate=True` (default).
         - copy the field from the parent, or the parent's parent if the field in
@@ -37,7 +40,7 @@ class InheritedField(Field):
           (default)
         - create a boolean flag ``is_<fieldname>_inherited`` in the current
           model.
-          
+
     This field implements a descriptor interface so it will work like a property
     with getters and setters.
 
@@ -49,7 +52,7 @@ class InheritedField(Field):
     """
     def __init__(self, parent_name, field_name=None, inherit_only=False, validate=True):
         super(InheritedField, self).__init__()
-        
+
         self.parent_object_field_name = parent_name
         self.inherited_field_name_in_parent = field_name
         self.inherit_only = inherit_only
@@ -61,8 +64,8 @@ class InheritedField(Field):
             pname = self.inherited_field_name_in_parent or name
             displayfname = "get_%s_display" % pname
             return u"%s *Inherited" % (
-                getattr(rel, displayfname)() 
-                if hasattr(rel, displayfname) 
+                getattr(rel, displayfname)()
+                if hasattr(rel, displayfname)
                 else getattr(rel, pname)
             )
         else:
@@ -71,14 +74,14 @@ class InheritedField(Field):
     def contribute_to_class(self, cls, name):
         self.name = self.attname = name
         cls._meta.add_virtual_field(self)
-        
+
         self.inherit_flag_name = INHERIT_FLAG_NAME % name
         self.value_field_name = VALUE_FIELD_NAME % name
 
         if not self.inherit_only:
             flag_field = BooleanField(default=True)
             flag_field.creation_counter = self.creation_counter
-            
+
             # Adjust the creation_counter
             # cls.add_to_class(self.inherit_flag_name, flag_field)
             flag_field.contribute_to_class(cls, self.inherit_flag_name)
@@ -88,7 +91,7 @@ class InheritedField(Field):
                 sender=cls,
                 weak=False
             )
-        
+
         setattr(cls, name, self)
         display_name = 'get_%s_display' % name
         setattr(cls, display_name, curry(self.get_field_display, name=name))
@@ -105,7 +108,7 @@ class InheritedField(Field):
             _get_query_set = sender.objects.get_query_set
             def get_query_set(qs):
                 model = qs.model
-                
+
                 if hasattr(model, 'FIELD_INHERITANCE_REL'):
                     related = model.FIELD_INHERITANCE_REL
                 else:
@@ -115,9 +118,9 @@ class InheritedField(Field):
                         find_in_parent(model, parent, target_field, validate=False, chain=chain)
                         related.add('__'.join(chain))
                     model.FIELD_INHERITANCE_REL = related
-                    
+
                 return _get_query_set().select_related(*related)
-            
+
             sender.objects.original_get_query_set = _get_query_set
             sender.objects.get_query_set = get_query_set.__get__(sender.objects)
             logger.debug("Patching %s's get_query_set method to slap a select_related on the returned qs.", sender.__name__)
@@ -129,15 +132,15 @@ class InheritedField(Field):
 
             if isinstance(field, ReverseManyRelatedObjectsDescriptor):
                 field = field.field
-            
+
             xfield = copy.deepcopy(field)
             xfield.blank = True
             if isinstance(xfield, ManyToManyField):
                 xfield.rel.through = None
-                
+
             xfield.creation_counter = self.creation_counter
             xfield.contribute_to_class(sender, VALUE_FIELD_NAME % name)
-            
+
         value_field = find_in_parent(
             sender,
             self.parent_object_field_name,
@@ -255,7 +258,7 @@ class InheritedFieldQuerySet(QuerySet):
         if parts[-1] in QUERY_TERMS:
             lookup = parts.pop(-1)
         return (parts,lookup)
-        
+
     def patch_child(self, parts, lookup, value):
         inherited_flag = ["is_%s_inherited" % parts[-1]]
         inherited_value = ["%s_value" % parts[-1]]
