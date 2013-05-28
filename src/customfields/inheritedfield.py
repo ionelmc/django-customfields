@@ -123,6 +123,7 @@ class InheritedField(Field):
 
             sender.objects.original_get_query_set = _get_query_set
             sender.objects.get_query_set = get_query_set.__get__(sender.objects)
+            sender.objects.get_queryset = get_query_set.__get__(sender.objects) # for django 1.6+
             logger.debug("Patching %s's get_query_set method to slap a select_related on the returned qs.", sender.__name__)
 
     def add_value_field(self, sender, name=None, robust=True, **kwargs):
