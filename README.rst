@@ -12,8 +12,11 @@ Couple of custom model fields for django: CachedManyToManyField and InheritedFie
     :alt: Coverage Status
     :target: https://coveralls.io/r/ionelmc/django-customfields
 
+.. image:: https://badge.fury.io/py/django-customfields.png
+    :alt: PYPI Package
+    :target: https://pypi.python.org/pypi/django-customfields
 
 .. image:: https://d2weczhvl823v0.cloudfront.net/ionelmc/django-customfields/trend.png
-   :alt: Bitdeli badge
-   :target: https://bitdeli.com/free
+    :alt: Bitdeli badge
+    :target: https://bitdeli.com/free
 
