@@ -8,6 +8,5 @@ build/
 .build/
 pip-log.txt
 .tox/
-.hg/
+.coverage*
 .ve/
-.coverage
