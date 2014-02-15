@@ -16,7 +16,9 @@ Couple of custom model fields for django: CachedManyToManyField and InheritedFie
     :alt: PYPI Package
     :target: https://pypi.python.org/pypi/django-customfields
 
-.. image:: https://d2weczhvl823v0.cloudfront.net/ionelmc/django-customfields/trend.png
-    :alt: Bitdeli badge
-    :target: https://bitdeli.com/free
+Requirements
+============
 
+:OS: Any
+:Runtime: Python 2.6, 2.7 or PyPy
+:Packages: Django>=1.3
